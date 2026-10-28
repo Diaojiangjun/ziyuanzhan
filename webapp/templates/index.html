@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% from "_macros.html" import source_card %}
+
+{% block title %}影视资源站大全_采集站接口导航与实时监控 - {{ site_name }}{% endblock %}
+{% block description %}{{ site_name }}收录{{ stats.total }}个影视资源站与采集接口，{{ stats.alive }}个在线，平均可用率{{ stats.online_rate }}%，提供实时可用性监控与接口测试。{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-top">
+      <h1>{{ site_name }}</h1>
+      <span class="pill pill-live"><i class="dot"></i> {{ stats.alive }} 个在线</span>
+    </div>
+    <form class="hero-search" action="/discover" method="get" role="search">
+      <input type="search" name="q" placeholder="搜索资源站名称，如极速、暴风、番茄..." autocomplete="off" aria-label="搜索资源站">
+      <button type="submit" aria-label="搜索">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4.3-4.3"/></svg>
+      </button>
+    </form>
+    <div class="hero-chips">
+      {% for tag in tags[:6] %}
+      <a href="/discover?tag={{ tag.name|urlencode }}" class="chip">{{ tag.name }}</a>
+      {% endfor %}
+      <a href="/top" class="chip">排行榜</a>
+      <a href="/monitor" class="chip">实时监控</a>
+      <a href="/download" class="chip chip-accent">一键采集 →</a>
+      <a href="/api/v1/sources" class="chip">开放接口 →</a>
+    </div>
+  </div>
+</section>
+
+<div class="stat-strip">
+  <div class="stat-item"><strong class="grad">{{ stats.total }}</strong><span>收录</span></div>
+  <i class="divider"></i>
+  <div class="stat-item"><strong class="green">{{ stats.alive }}</strong><span>在线</span></div>
+  <i class="divider"></i>
+  <div class="stat-item"><strong class="grad-cool">{{ stats.online_rate }}<small>%</small></strong><span>可用率</span></div>
+  <i class="divider"></i>
+  <div class="stat-item"><strong class="grad-warm">{{ stats.total_resources_text }}+</strong><span>资源量</span></div>
+</div>
+
+<section class="section">
+  <div class="section-head">
+    <h2><span class="section-bar"></span>热门影视资源站</h2>
+    <a href="/discover" class="section-more">查看更多 →</a>
+  </div>
+  <div class="card-grid">
+    {% for item in hot %}{{ source_card(item) }}{% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2><span class="section-bar"></span>推荐稳定播放源</h2>
+    <a href="/discover?sort=uptime" class="section-more">排行榜 →</a>
+  </div>
+  <div class="card-grid">
+    {% for item in stable %}{{ source_card(item) }}{% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2><span class="section-bar"></span>资源量领先</h2>
+    <a href="/discover?sort=resources" class="section-more">全部资源 →</a>
+  </div>
+  <div class="card-grid">
+    {% for item in biggest %}{{ source_card(item) }}{% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="feature-grid">
+    <a class="feature-card" href="/monitor">
+      <span class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12h4l2-7 3 14 2-7h7"/></svg>
+      </span>
+      <h3>实时监控</h3>
+      <p>每 {{ monitor_interval }} 分钟探测全部采集接口，记录可用率与响应速度。</p>
+    </a>
+    <a class="feature-card" href="/top">
+      <span class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 20V10m6 10V4m6 16v-7m6 7V7"/></svg>
+      </span>
+      <h3>多维排行榜</h3>
+      <p>按可用率、资源量、响应速度排序，快速筛出稳定播放源。</p>
+    </a>
+    <a class="feature-card" href="/tags">
+      <span class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.6 13.4L12 22l-9-9V4h9l8.6 8.6a1 1 0 010 1.4z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>
+      </span>
+      <h3>标签聚合</h3>
+      <p>按稳定、极速、无广告、综合等标签筛选合适的资源站。</p>
+    </a>
+    <a class="feature-card" href="/download">
+      <span class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+      </span>
+      <h3>一键采集配置下载</h3>
+      <p>导出苹果CMS 与 TVBox 可直接导入的采集接口配置。</p>
+    </a>
+    <a class="feature-card" href="/api/v1/sources">
+      <span class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 6l-5 6 5 6m8-12l5 6-5 6M13 4l-2 16"/></svg>
+      </span>
+      <h3>开放数据接口</h3>
+      <p>提供 JSON 接口，可接入苹果CMS、TVBox 或其他采集工具。</p>
+    </a>
+  </div>
+</section>
+
+<section class="section panel" id="about">
+  <h2 class="panel-title">关于{{ site_name }}</h2>
+  <p>
+    {{ site_name }}是一套独立部署的影视资源站导航与监测平台，持续记录采集接口的可用性、响应速度与资源量变化。
+    当前收录 {{ stats.total }} 个资源站，其中 {{ stats.alive }} 个在线，平均可用率 {{ stats.online_rate }}%，
+    累计资源量 {{ stats.total_resources_text }} 条，覆盖电影、电视剧、动漫、综艺等分类。
+  </p>
+  <p>
+    平台每 2 小时自动探测一次，所有数据保存在本站数据库中，并提供 JSON 接口供采集系统、TVBox 配置生成与其他工具调用。
+    如需收录自己的资源站，可通过数据接口了解现有条目格式。
+  </p>
+  <div class="panel-links">
+    <a href="/discover" class="btn btn-primary">分类浏览</a>
+    <a href="/monitor" class="btn">实时监控</a>
+    <a href="/discover?sort=uptime" class="btn">排行榜</a>
+    <a href="/api/v1/sources" class="btn">资源站大全</a>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <h2 class="section-head plain"><span class="section-bar"></span>常见问题</h2>
+  <details class="faq">
+    <summary>什么是资源站？</summary>
+    <p>资源站是提供影视资源数据采集接口的平台，常见接口格式为 JSON 或 XML，可对接苹果CMS、海洋CMS、飞飞CMS等影视系统，用于自动同步电影、电视剧、动漫、综艺等内容。</p>
+  </details>
+  <details class="faq">
+    <summary>本站收录哪些类型的资源站？</summary>
+    <p>目前主要收录影视资源站、采集站和播放源，覆盖电影、电视剧、动漫、综艺等方向。所有条目都经过可用性探测，并在资源站详情页展示接口地址与历史状态。</p>
+  </details>
+  <details class="faq">
+    <summary>如何添加自己的资源站？</summary>
+    <p>本站数据由定时任务从公开 API 同步，也可以通过管理脚本直接写入数据库。建议先确认接口可访问、返回标准 JSON，并在详情页测试通过后再对外发布。</p>
+  </details>
+  <details class="faq">
+    <summary>可用率是如何计算的？</summary>
+    <p>可用率基于最近 30 天的探测记录计算，每次探测记录 HTTP 状态与响应耗时。可用率越高，说明接口越稳定；响应过慢的站点会在监控页标记为警告。</p>
+  </details>
+  <details class="faq">
+    <summary>如何选择适合自己的资源站？</summary>
+    <p>建议从可用率、资源量、响应速度和内容分类四个维度综合判断。优先选择可用率 95% 以上、响应稳定且资源更新频率高的站点，并配置 2-3 个备用源降低单点故障风险。</p>
+  </details>
+</section>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.name }}采集对接教程 - {{ site_name }}{% endblock %}
+{% block description %}{{ item.summary }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span><a href="/tutorial">采集教程</a><span>/</span><span class="current">{{ item.name }}</span>
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-top">
+      <h1>{{ item.icon }} {{ item.name }}</h1>
+      <span class="pill">{{ item.level }}</span>
+    </div>
+    <p class="hero-sub">{{ item.intro }}</p>
+    <div class="hero-actions">
+      <a class="btn btn-light" href="/download">下载接口配置</a>
+      <a class="btn btn-light-ghost" href="/discover">挑选资源站</a>
+    </div>
+  </div>
+</section>
+
+<article class="panel article-detail">
+  <h2 class="panel-title">对接步骤</h2>
+  <ol class="step-list">
+    {% for step in item.steps %}
+    <li><span class="step-num">{{ loop.index }}</span><p>{{ step }}</p></li>
+    {% endfor %}
+  </ol>
+
+  <h2 class="panel-title">注意事项</h2>
+  <ul class="note-list">
+    {% for note in item.notes %}
+    <li>{{ note }}</li>
+    {% endfor %}
+  </ul>
+
+  <div class="panel-links">
+    <a class="btn btn-primary" href="/monitor">查看可用接口</a>
+    <a class="btn" href="/tutorial">返回教程列表</a>
+  </div>
+</article>
+
+{% if siblings %}
+<section class="section">
+  <div class="section-head">
+    <h2><span class="section-bar"></span>其他教程</h2>
+    <a href="/tutorial" class="section-more">全部 →</a>
+  </div>
+  <div class="tutorial-grid">
+    {% for entry in siblings %}
+    <a class="tutorial-card" href="/tutorial/{{ entry.slug }}">
+      <span class="tutorial-icon">{{ entry.icon }}</span>
+      <div class="tutorial-body">
+        <div class="tutorial-head">
+          <h3>{{ entry.name }}</h3>
+          <span class="level-badge">{{ entry.level }}</span>
+        </div>
+        <p>{{ entry.summary }}</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

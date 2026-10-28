@@ -1,0 +1,10 @@
+.git
+.github
+__pycache__
+*.pyc
+.venv
+venv
+data
+docs/index.html
+docs/data/monitor_*.json
+node_modules

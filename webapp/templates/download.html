@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}苹果CMS 一键采集配置 - {{ site_name }}{% endblock %}
+{% block description %}下载苹果CMS一键采集接口配置文件，收录{{ api_total }}个采集站，{{ online_total }}个当前在线，支持苹果CMS、海洋CMS等系统批量导入。{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span><span class="current">一键采集</span>
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <h1>苹果CMS 一键采集配置</h1>
+    <p class="hero-sub">下载接口配置文件，在苹果CMS「自定义采集」中批量导入，即可一键采集 {{ api_total }} 个采集站的数据。配置生成于 {{ generated }}。</p>
+    <div class="hero-actions">
+      <a class="btn btn-light" href="/download/cms-interfaces.json">下载 JSON 配置</a>
+      <a class="btn btn-light-ghost" href="/download/cms-interfaces.txt">下载 TXT 配置</a>
+      <a class="btn btn-light-ghost" href="/download/tvbox.json">TVBox 配置</a>
+    </div>
+  </div>
+</section>
+
+<div class="metric-grid">
+  <div class="metric-card"><strong class="grad">{{ api_total }}</strong><span>采集接口</span></div>
+  <div class="metric-card"><strong class="green">{{ online_total }}</strong><span>当前在线</span></div>
+  <div class="metric-card"><strong class="grad-cool">{{ stats.online_rate }}<small>%</small></strong><span>整体可用率</span></div>
+  <div class="metric-card"><strong class="grad-warm">{{ stats.total_resources_text }}</strong><span>资源总量</span></div>
+</div>
+
+{% if focus %}
+<section class="section panel focus-panel">
+  <h2 class="panel-title">已选中：{{ focus.name }}</h2>
+  <p>复制下面的配置片段，粘贴到苹果CMS「自定义采集」中新增一个接口；也可以只导出该站配置。</p>
+  <div class="code-box">
+    <code id="focus-config">{"name": "{{ focus.name }}", "api": "{{ focus.api }}", "apiType": "{{ (focus.api_type or 'json')|lower }}", "uptime": "{{ focus.uptime_text }}"}</code>
+    <button type="button" class="btn btn-small" data-copy-target="focus-config">复制</button>
+  </div>
+  <div class="panel-links">
+    <a class="btn btn-primary" href="/download/cms-interfaces.json?site={{ focus.slug }}">只导出该站 JSON</a>
+    <a class="btn" href="/source/{{ focus.slug }}">查看站点详情</a>
+  </div>
+</section>
+{% endif %}
+
+<section class="section panel">
+  <h2 class="panel-title">一键采集导入步骤（苹果CMS V10）</h2>
+  <ol class="step-list">
+    <li><span class="step-num">1</span><p>点击上方按钮下载 <span class="mono">cms-interfaces.json</span> 或 <span class="mono">cms-interfaces.txt</span>。</p></li>
+    <li><span class="step-num">2</span><p>登录苹果CMS 后台，进入「采集」→「自定义采集」。</p></li>
+    <li><span class="step-num">3</span><p>点击「批量导入」，上传 JSON 文件或粘贴 TXT 内容，系统会识别全部接口。</p></li>
+    <li><span class="step-num">4</span><p>按需删除不可用的采集站，并为每个接口绑定本站分类。</p></li>
+    <li><span class="step-num">5</span><p>进入「采集」→「一键采集」，选择接口后开始采集。</p></li>
+  </ol>
+  <p class="muted">导入前建议先在浏览器打开接口地址，确认返回 JSON 且包含分类与数据列表。</p>
+</section>
+
+<section class="section panel">
+  <h2 class="panel-title">配置文件说明</h2>
+  <p>JSON 为数组结构，每项包含采集站名称、接口地址、接口类型、可用率、速度等级、资源量与分类占位，可直接用于批量导入。</p>
+  <div class="code-box">
+    <code id="schema-sample">[{"name":"示例资源站","api":"https://example.com/api.php/provide/vod/","apiType":"json","uptime":"100%","speed":"fast","totalResources":120000,"categories":[]}]</code>
+    <button type="button" class="btn btn-small" data-copy-target="schema-sample">复制</button>
+  </div>
+  <p class="muted">TXT 为每行一条，字段用「|」分隔：采集站名称|API地址|接口类型|可用率，以 # 开头的行是注释。</p>
+</section>
+
+<section class="section panel">
+  <h2 class="panel-title">TVBox / 影视前端</h2>
+  <p>下载的 TVBox 配置只包含当前在线的接口，可直接放入影视前端的 sites 数组中使用。</p>
+  <div class="panel-links">
+    <a class="btn btn-primary" href="/download/tvbox.json">tvbox-sites.json</a>
+    <a class="btn" href="/tutorial/moontv">MoonTV 配置教程</a>
+    <a class="btn" href="/tutorial/libretv">LibreTV 配置教程</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2><span class="section-bar"></span>接口清单</h2>
+    <span class="section-more">{{ items|length }} 条</span>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>资源站</th><th>接口地址</th><th>格式</th><th>状态</th><th>操作</th></tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr {% if focus_site == item.slug %}class="row-focus"{% endif %}>
+          <td><a class="table-link" href="/source/{{ item.slug }}">{{ item.name }}</a></td>
+          <td><span class="mono">{{ item.api }}</span></td>
+          <td>{{ item.api_type_label }}</td>
+          <td><span class="badge badge-{{ item.status_class }}"><i class="dot"></i>{{ item.status_label }}</span></td>
+          <td>
+            <code id="api-{{ item.id }}" class="visually-hidden">{{ item.api }}</code>
+            <button type="button" class="btn btn-small" data-copy-target="api-{{ item.id }}">复制</button>
+            <a class="btn btn-small" href="/download?site={{ item.slug }}">采集</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

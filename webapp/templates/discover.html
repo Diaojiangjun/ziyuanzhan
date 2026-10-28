@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% from "_macros.html" import source_card %}
+
+{% block title %}资源站分类与排行榜 - {{ site_name }}{% endblock %}
+{% block description %}按可用率、资源量、响应速度筛选{{ stats.total }}个影视资源站，支持名称搜索与标签聚合。{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span>
+  {% if category_name %}
+  <a href="/tags">标签</a><span>/</span><span class="current">{{ category_name }}</span>
+  {% else %}
+  <a href="/discover">发现</a><span>/</span><span class="current">全部资源站</span>
+  {% endif %}
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    {% if category_name %}
+    <h1>#{{ category_name }}</h1>
+    <p class="hero-sub">带有「{{ category_name }}」标签的资源站共 {{ total }} 个，可按状态与维度继续筛选。</p>
+    {% else %}
+    <h1>发现资源站</h1>
+    <p class="hero-sub">共收录 {{ stats.total }} 个影视资源站与采集接口，{{ stats.alive }} 个在线，按可用率、资源量与响应速度快速筛选。</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="filter-panel">
+  <form method="get" action="/discover" class="filter-form">
+    <div class="filter-search">
+      <input type="search" name="q" value="{{ q }}" placeholder="搜索名称、域名或标签" aria-label="搜索资源站">
+      <button type="submit" class="btn btn-primary">搜索</button>
+    </div>
+    <div class="filter-row">
+      <label>
+        <span>标签</span>
+        <select name="tag">
+          <option value="">全部标签</option>
+          {% for item in tags %}
+          <option value="{{ item.name }}" {{ 'selected' if tag == item.name else '' }}>{{ item.name }}（{{ item.count }}）</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>状态</span>
+        <select name="status">
+          <option value="all" {{ 'selected' if status == 'all' else '' }}>全部状态</option>
+          <option value="online" {{ 'selected' if status == 'online' else '' }}>仅在线</option>
+          <option value="offline" {{ 'selected' if status == 'offline' else '' }}>仅故障</option>
+        </select>
+      </label>
+      <label>
+        <span>排序</span>
+        <select name="sort">
+          <option value="default" {{ 'selected' if sort == 'default' else '' }}>综合评分</option>
+          <option value="uptime" {{ 'selected' if sort == 'uptime' else '' }}>可用率最高</option>
+          <option value="resources" {{ 'selected' if sort == 'resources' else '' }}>资源量最大</option>
+          <option value="speed" {{ 'selected' if sort == 'speed' else '' }}>响应最快</option>
+          <option value="latest" {{ 'selected' if sort == 'latest' else '' }}>最近更新</option>
+        </select>
+      </label>
+      <button type="submit" class="btn">应用筛选</button>
+      <a href="/discover" class="btn btn-ghost">重置</a>
+    </div>
+  </form>
+  <div class="sort-tabs">
+    {% set query = 'q=' ~ (q|urlencode) ~ '&tag=' ~ (tag|urlencode) ~ '&status=' ~ status %}
+    <a href="/discover?{{ query }}&sort=default" class="{{ 'is-active' if sort == 'default' else '' }}">综合</a>
+    <a href="/discover?{{ query }}&sort=uptime" class="{{ 'is-active' if sort == 'uptime' else '' }}">可用率</a>
+    <a href="/discover?{{ query }}&sort=resources" class="{{ 'is-active' if sort == 'resources' else '' }}">资源量</a>
+    <a href="/discover?{{ query }}&sort=speed" class="{{ 'is-active' if sort == 'speed' else '' }}">响应速度</a>
+    <a href="/discover?{{ query }}&sort=latest" class="{{ 'is-active' if sort == 'latest' else '' }}">最近更新</a>
+  </div>
+</section>
+
+<div class="result-meta">
+  <span>共 <strong>{{ total }}</strong> 个结果</span>
+  {% if q %}<span>关键词：{{ q }}</span>{% endif %}
+  {% if tag %}<span>标签：{{ tag }}</span>{% endif %}
+  {% if status != 'all' %}<span>状态：{{ '在线' if status == 'online' else '故障' }}</span>{% endif %}
+</div>
+
+{% if items %}
+<div class="card-grid">
+  {% for item in items %}{{ source_card(item) }}{% endfor %}
+</div>
+
+{% if pages > 1 %}
+<nav class="pagination" aria-label="分页">
+  {% set base = '/discover?q=' ~ (q|urlencode) ~ '&tag=' ~ (tag|urlencode) ~ '&status=' ~ status ~ '&sort=' ~ sort %}
+  {% if page > 1 %}<a href="{{ base }}&page={{ page - 1 }}">上一页</a>{% endif %}
+  {% for p in range(1, pages + 1) %}
+  <a href="{{ base }}&page={{ p }}" class="{{ 'is-active' if p == page else '' }}">{{ p }}</a>
+  {% endfor %}
+  {% if page < pages %}<a href="{{ base }}&page={{ page + 1 }}">下一页</a>{% endif %}
+</nav>
+{% endif %}
+{% else %}
+<div class="empty-state">
+  <h3>没有找到匹配的资源站</h3>
+  <p>试试更换关键词，或<a href="/discover">查看全部资源站</a>。</p>
+</div>
+{% endif %}
+{% endblock %}

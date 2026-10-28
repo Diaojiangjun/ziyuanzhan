@@ -1,0 +1,15 @@
+services:
+  site:
+    image: ${IMAGE:-ziyuanzhan:local}
+    build: .
+    container_name: ziyuanzhan
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      SITE_NAME: ${SITE_NAME:-资源组}
+      ENABLE_MONITOR: ${ENABLE_MONITOR:-1}
+      MONITOR_INTERVAL_MINUTES: ${MONITOR_INTERVAL_MINUTES:-120}
+      DB_PATH: /app/webapp/data/site.db
+    volumes:
+      - ./data:/app/webapp/data

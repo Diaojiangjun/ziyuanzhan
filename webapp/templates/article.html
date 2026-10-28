@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}知识库 - {{ site_name }}{% endblock %}
+{% block description %}采集教程、视频源配置、播放器对接与站长经验等影视资源站相关文章。{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span><span class="current">知识库</span>
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <h1>知识库</h1>
+    <p class="hero-sub">围绕资源站对接、播放源配置与运维的经验整理。</p>
+  </div>
+</section>
+
+<div class="sort-tabs sort-tabs-standalone">
+  <a href="/article" class="{{ 'is-active' if not cat else '' }}">全部</a>
+  {% for category in categories %}
+  <a href="/article?cat={{ category.slug }}" class="{{ 'is-active' if cat == category.slug else '' }}">{{ category.name }}</a>
+  {% endfor %}
+</div>
+
+<div class="article-list">
+  {% for item in items %}
+  {% set item_category = categories | selectattr('slug', 'equalto', item.category) | first %}
+  <a class="article-card" href="/article/{{ item.slug }}">
+    <span class="article-icon">{{ item_category.icon if item_category else '📄' }}</span>
+    <div class="article-body">
+      <div class="article-head">
+        <h3>{{ item.title }}</h3>
+        <span class="level-badge">{{ item_category.name if item_category else '文章' }}</span>
+      </div>
+      <p>{{ item.summary }}</p>
+      <span class="article-more">阅读全文 →</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+{% if not items %}
+<div class="empty-state">
+  <h3>该分类下暂无文章</h3>
+  <p><a href="/article">查看全部文章</a></p>
+</div>
+{% endif %}
+{% endblock %}

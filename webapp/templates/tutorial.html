@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}采集教程 - {{ site_name }}{% endblock %}
+{% block description %}苹果CMS、海洋CMS、飞飞CMS等影视系统的采集接口对接与配置教程。{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span><span class="current">采集教程</span>
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <h1>采集教程</h1>
+    <p class="hero-sub">常见影视系统的接口对接流程，从新增接口到分类绑定按步骤说明。</p>
+  </div>
+</section>
+
+<div class="sort-tabs sort-tabs-standalone">
+  <a href="/tutorial" class="{{ 'is-active' if not level else '' }}">全部</a>
+  {% for item in levels %}
+  <a href="/tutorial?level={{ item|urlencode }}" class="{{ 'is-active' if level == item else '' }}">{{ item }}</a>
+  {% endfor %}
+</div>
+
+<div class="tutorial-grid">
+  {% for item in items %}
+  <a class="tutorial-card" href="/tutorial/{{ item.slug }}">
+    <span class="tutorial-icon">{{ item.icon }}</span>
+    <div class="tutorial-body">
+      <div class="tutorial-head">
+        <h3>{{ item.name }}</h3>
+        <span class="level-badge">{{ item.level }}</span>
+      </div>
+      <p>{{ item.summary }}</p>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+{% if not items %}
+<div class="empty-state">
+  <h3>该难度下暂无教程</h3>
+  <p><a href="/tutorial">查看全部教程</a></p>
+</div>
+{% endif %}
+{% endblock %}

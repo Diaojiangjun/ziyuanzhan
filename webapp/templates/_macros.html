@@ -1,0 +1,28 @@
+{% macro source_card(item) %}
+<div class="source-card tone-{{ item.status_class }}">
+  <span class="card-bar"></span>
+  <a class="card-main" href="/source/{{ item.slug }}" aria-label="{{ item.name }} - 可用率 {{ item.uptime_text }}">
+    <div class="card-body">
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.domain or item.url }}</p>
+        </div>
+        <span class="badge badge-{{ item.status_class }}"><i class="dot"></i>{{ item.status_label }}</span>
+      </div>
+      <div class="card-metrics">
+        <span title="资源量">{{ item.resources_text }}</span>
+        <span title="可用率">{{ item.uptime_text }}</span>
+        <span title="平均响应">{{ item.response_text }}</span>
+      </div>
+      <div class="tag-row">
+        {% for tag in item.tags[:3] %}<span class="tag">#{{ tag }}</span>{% endfor %}
+      </div>
+    </div>
+  </a>
+  <div class="card-foot">
+    <a class="btn btn-small btn-primary" href="/download?site={{ item.slug }}">一键采集</a>
+    <a class="btn btn-small" href="/source/{{ item.slug }}">详情</a>
+  </div>
+</div>
+{% endmacro %}

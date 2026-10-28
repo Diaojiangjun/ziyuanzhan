@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}资源站实时监控 - {{ site_name }}{% endblock %}
+{% block description %}{{ stats.total }}个资源站实时可用性监控：{{ stats.alive }}个正常、{{ stats.offline }}个故障，可用率{{ stats.online_rate }}%，平均响应{{ stats.avg_response }}ms。{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span><span class="current">实时监控</span>
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <h1>实时监控</h1>
+    <p class="hero-sub">{{ maintenance or '等待首次探测' }} · 每 {{ monitor_interval }} 分钟自动探测采集接口</p>
+  </div>
+</section>
+
+<section class="metric-grid">
+  <div class="metric-card"><strong class="grad">{{ stats.total }}</strong><span>监控站点</span></div>
+  <div class="metric-card"><strong class="green">{{ stats.alive }}</strong><span>正常</span></div>
+  <div class="metric-card"><strong class="amber">{{ stats.warning }}</strong><span>警告</span></div>
+  <div class="metric-card"><strong class="red">{{ stats.offline }}</strong><span>故障</span></div>
+  <div class="metric-card"><strong class="grad-cool">{{ stats.online_rate }}%</strong><span>可用率</span></div>
+  <div class="metric-card"><strong>{{ stats.avg_response }}ms</strong><span>平均响应</span></div>
+  <div class="metric-card"><strong class="grad-warm">{{ stats.total_resources_text }}</strong><span>总资源量</span></div>
+</section>
+
+<section class="split-grid">
+  <div class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">健康度评分</h2>
+      <span class="badge badge-{{ 'ok' if stats.health_score >= 90 else ('warn' if stats.health_score >= 75 else 'bad') }}">
+        {{ '运行良好' if stats.health_score >= 90 else ('部分站点需关注' if stats.health_score >= 75 else '需要处理') }}
+      </span>
+    </div>
+    <div class="score-wrap">
+      <div class="score-ring" style="--score: {{ stats.health_score }}">
+        <span>{{ stats.health_score }}</span>
+      </div>
+      <div class="score-legend">
+        <p><i class="legend-dot ok"></i>可用率权重 40%</p>
+        <p><i class="legend-dot info"></i>响应速度权重 30%</p>
+        <p><i class="legend-dot warn"></i>在线率权重 30%</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">近 10 天可用率趋势</h2>
+      <span class="muted">按每日探测结果汇总</span>
+    </div>
+    <div class="trend-chart">
+      {% for day in trend %}
+      <div class="trend-bar" title="{{ day.day }} · 可用率 {{ day.rate if day.rate is not none else '暂无' }}%">
+        <div class="trend-fill {{ 'is-empty' if day.rate is none else '' }}" style="height: {{ day.rate if day.rate is not none else 4 }}%"></div>
+        <span>{{ day.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2><span class="section-bar"></span>站点可用性</h2>
+    <span class="muted">绿色正常 · 黄色警告 · 红色故障 · 灰色无记录</span>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>资源站</th>
+          <th>状态</th>
+          <th>可用率</th>
+          <th>响应</th>
+          <th>资源量</th>
+          <th class="days-col">近 10 天</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>
+            <a class="table-link" href="/source/{{ item.slug }}">{{ item.name }}</a>
+            <div class="table-sub">{{ item.domain }}</div>
+          </td>
+          <td><span class="badge badge-{{ item.status_class }}"><i class="dot"></i>{{ item.status_label }}</span></td>
+          <td>{{ item.uptime_text }}</td>
+          <td class="{{ 'green' if (item.response_time or 0) < 600 else ('amber' if (item.response_time or 0) < 1500 else 'red') }}">{{ item.response_text }}</td>
+          <td>{{ item.resources_text }}</td>
+          <td class="days-col">
+            <div class="day-cells">
+              {% for day in item.days %}
+              <i class="day-cell {{ day.state }}" title="{{ day.title }}"></i>
+              {% endfor %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section panel">
+  <h2 class="panel-title">监控说明</h2>
+  <p>平台每 2 小时对已收录资源站的采集接口发起一次 HTTP 请求，记录状态码、响应耗时与是否可访问。状态码 2xx/3xx 视为正常，401/403 视为在线但受限，超时或连接失败视为故障。</p>
+  <p>可用率按最近 30 天的探测记录计算；历史不足 5 次时优先沿用同步接口提供的可用率。监控数据仅反映接口的可访问性，不代表站点内容质量。</p>
+</section>
+{% endblock %}

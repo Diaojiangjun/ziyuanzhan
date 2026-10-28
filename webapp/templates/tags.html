@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}资源站标签分类 - {{ site_name }}{% endblock %}
+{% block description %}按稳定、极速、无广告、高清等标签浏览{{ stats.total }}个影视资源站。{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span><a href="/discover">发现</a><span>/</span><span class="current">标签</span>
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <h1>标签分类</h1>
+    <p class="hero-sub">共 {{ tags|length }} 个标签，点击任意标签查看对应资源站列表。</p>
+  </div>
+</section>
+
+<div class="tag-cloud">
+  {% for tag in tags %}
+  <a class="tag-pill" href="/category/{{ tag.name|urlencode }}">
+    <span>#{{ tag.name }}</span>
+    <em>{{ tag.count }}</em>
+  </a>
+  {% endfor %}
+</div>
+
+<section class="section">
+  <div class="section-head">
+    <h2><span class="section-bar"></span>快捷入口</h2>
+  </div>
+  <div class="feature-grid">
+    <a class="feature-card" href="/discover?sort=uptime">
+      <h3>稳定优先</h3>
+      <p>按最近 30 天可用率排序，优先挑选高频在线站点。</p>
+    </a>
+    <a class="feature-card" href="/discover?sort=resources">
+      <h3>资源最多</h3>
+      <p>按资源量排序，适合需要大量影视数据的采集场景。</p>
+    </a>
+    <a class="feature-card" href="/discover?sort=speed">
+      <h3>响应最快</h3>
+      <p>按平均响应耗时排序，减少采集与搜索等待时间。</p>
+    </a>
+    <a class="feature-card" href="/download">
+      <h3>一键配置</h3>
+      <p>导出苹果CMS 与 TVBox 可直接使用的接口配置。</p>
+    </a>
+  </div>
+</section>
+{% endblock %}

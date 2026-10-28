@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} - {{ site_name }}{% endblock %}
+{% block description %}{{ item.summary }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span><a href="/article">知识库</a>
+  {% if category %}<span>/</span><a href="/article?cat={{ category.slug }}">{{ category.name }}</a>{% endif %}
+  <span>/</span><span class="current">{{ item.title }}</span>
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <h1>{{ item.title }}</h1>
+    <p class="hero-sub">{{ item.summary }}</p>
+  </div>
+</section>
+
+<article class="panel article-detail">
+  {% for section in item.sections %}
+  <h2 class="panel-title">{{ section.title }}</h2>
+  <p>{{ section.body }}</p>
+  {% endfor %}
+  <div class="panel-links">
+    <a class="btn btn-primary" href="/discover">浏览资源站</a>
+    <a class="btn" href="/article">返回知识库</a>
+  </div>
+</article>
+
+{% if related %}
+<section class="section">
+  <div class="section-head">
+    <h2><span class="section-bar"></span>相关阅读</h2>
+  </div>
+  <div class="article-list">
+    {% for entry in related %}
+    <a class="article-card" href="/article/{{ entry.slug }}">
+      <span class="article-icon">{{ category.icon if category else '📄' }}</span>
+      <div class="article-body">
+        <div class="article-head">
+          <h3>{{ entry.title }}</h3>
+        </div>
+        <p>{{ entry.summary }}</p>
+        <span class="article-more">阅读全文 →</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

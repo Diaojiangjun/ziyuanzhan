@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% from "_macros.html" import source_card %}
+
+{% block title %}{{ item.name }}采集接口_可用率与响应速度 - {{ site_name }}{% endblock %}
+{% block description %}{{ item.name }}{{ item.api_type_label }}采集接口，收录{{ item.resources_text }}条资源，可用率{{ uptime_text }}，平均响应{{ summary.avg_response or item.response_time }}ms，提供接口在线测试与历史监控记录。{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span><a href="/discover">资源站</a><span>/</span><span class="current">{{ item.name }}</span>
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-top">
+      <h1>{{ item.name }}</h1>
+      <span class="badge badge-{{ item.status_class }}"><i class="dot"></i>{{ item.status_label }}</span>
+    </div>
+    <p class="hero-sub">
+      {{ item.name }}是{% if founded_year %}{{ founded_year }} 年{% endif %}建站的{{ item.api_type_label }}采集源{% if item.tags %}，标签覆盖{{ item.tags|join('、') }}{% endif %}，当前可用率 {{ uptime_text }}，平均响应 {{ summary.avg_response or item.response_time }}ms。
+    </p>
+    <div class="hero-actions">
+      {% if item.api %}<a class="btn btn-light" href="/download?site={{ item.slug }}">一键采集</a>{% endif %}
+      {% if item.url %}<a class="btn btn-light-ghost" href="{{ item.url }}" target="_blank" rel="noopener nofollow">进入官网</a>{% endif %}
+      <a class="btn btn-light-ghost" href="#interface-tools">在线测试</a>
+    </div>
+  </div>
+</section>
+
+<section class="metric-grid">
+  <div class="metric-card"><strong class="{{ 'green' if uptime_value >= 99 else ('amber' if uptime_value >= 90 else 'red') }}">{{ uptime_text }}</strong><span>实际可用率</span></div>
+  <div class="metric-card"><strong class="grad">{{ item.resources_text }}</strong><span>资源总量</span></div>
+  <div class="metric-card"><strong>{{ summary.avg_response or item.response_time }}ms</strong><span>平均响应</span></div>
+  <div class="metric-card"><strong class="{{ 'green' if fault_days == 0 else 'red' }}">{{ fault_days }}</strong><span>故障天数</span></div>
+</section>
+
+<section class="split-grid">
+  <div class="panel">
+    <h2 class="panel-title">站点信息</h2>
+    <dl class="info-grid">
+      <div><dt>接口类型</dt><dd>{{ item.api_type_label }}</dd></div>
+      <div><dt>今日更新</dt><dd>{{ item.today_updates or 0 }}</dd></div>
+      <div><dt>建站时间</dt><dd>{{ item.established_at or '-' }}</dd></div>
+      <div><dt>最后检测</dt><dd>{{ maintenance or '-' }}</dd></div>
+      <div><dt>更新频率</dt><dd>{{ item.update_frequency or '-' }}</dd></div>
+      <div><dt>资源库更新</dt><dd>{{ item.last_resource_update or '-' }}</dd></div>
+    </dl>
+    {% if item.tags %}
+    <div class="tag-row tag-row-lg">
+      {% for tag in item.tags %}<a class="tag" href="/discover?tag={{ tag|urlencode }}">#{{ tag }}</a>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="panel" id="interface-tools">
+    <h2 class="panel-title">采集接口在线测试</h2>
+    <p class="muted">测试在本站服务器发起，可验证 HTTP 状态、响应耗时与 JSON 顶层字段。</p>
+    <div class="code-box">
+      <code id="api-url">{{ item.api or item.url or '未配置接口地址' }}</code>
+      <button type="button" class="btn btn-small" data-copy-target="api-url">复制</button>
+    </div>
+    <button type="button" class="btn btn-primary" data-api-test="{{ item.slug }}">开始测试</button>
+    <div id="test-result" class="test-result" hidden></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2><span class="section-bar"></span>近 10 天可用性记录</h2>
+    <span class="muted">{{ check_days }} 天探测数据 · 可用率 {{ uptime_text }}</span>
+  </div>
+  {% if history %}
+  <div class="history-list">
+    {% for day in history %}
+    <div class="history-row">
+      <span class="history-date">{{ day.day }}</span>
+      <span class="badge badge-{{ 'ok' if day.ok else 'warn' }}">{{ '正常' if day.ok else '异常' }}</span>
+      <span class="history-bar">
+        <i style="width: {{ (day.alive / day.total * 100) if day.total else 0 }}%"></i>
+      </span>
+      <span class="history-meta">{{ day.alive }}/{{ day.total }} 次成功 · {{ day.avg_response }}ms</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h3>暂无本地探测记录</h3>
+    <p>站点刚接入，首次定时探测后会在这里生成历史记录。</p>
+  </div>
+  {% endif %}
+</section>
+
+{% if recent %}
+<section class="section panel">
+  <h2 class="panel-title">最近探测明细</h2>
+  <div class="table-wrap">
+    <table class="data-table compact">
+      <thead><tr><th>时间</th><th>状态码</th><th>响应</th><th>结果</th><th>备注</th></tr></thead>
+      <tbody>
+        {% for check in recent %}
+        <tr>
+          <td>{{ check.checked_at }}</td>
+          <td>{{ check.status_code or '-' }}</td>
+          <td>{{ check.response_time_ms or '-' }}ms</td>
+          <td><span class="badge badge-{{ 'ok' if check.is_alive else 'bad' }}">{{ '正常' if check.is_alive else '失败' }}</span></td>
+          <td class="muted">{{ check.error or '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% if related %}
+<section class="section">
+  <div class="section-head">
+    <h2><span class="section-bar"></span>同类资源站推荐</h2>
+    <a href="/discover?tag={{ (item.tags[0] if item.tags else '')|urlencode }}" class="section-more">查看更多 →</a>
+  </div>
+  <div class="card-grid">
+    {% for related_item in related %}{{ source_card(related_item) }}{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="section panel">
+  <h2 class="panel-title">{{ item.name }}评测与对接</h2>
+  <p>
+    {{ item.name }}当前提供标准{{ item.api_type_label }}采集接口，已记录 {{ item.resources_text }} 条资源，更新频率为{{ item.update_frequency or '未知' }}。
+    近 {{ check_days or 30 }} 天可用率 {{ uptime_text }}，平均响应 {{ summary.avg_response or item.response_time }}ms，适合作为多源采集方案中的一个节点。
+  </p>
+  <p>
+    使用时建议在 CMS 后台先做一次接口测试，确认分类与播放地址字段正常，再开启定时采集；同时保留 2-3 个备用源，避免单一接口故障影响更新。
+  </p>
+  {% if item.description %}<p class="muted">资源站简介：{{ item.description }}</p>{% endif %}
+  <div class="panel-links">
+    <a class="btn" href="/monitor">查看实时监控</a>
+    <a class="btn" href="/discover?sort=uptime">可用率排行榜</a>
+    <a class="btn" href="/api/v1/sources/{{ item.slug }}">查看 JSON 数据</a>
+  </div>
+</section>
+{% endblock %}

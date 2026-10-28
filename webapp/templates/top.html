@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}资源站排行榜 - {{ site_name }}{% endblock %}
+{% block description %}按可用率、资源量与响应速度排列的影视资源站榜单，仅统计当前在线的{{ total }}个站点。{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span><a href="/discover">发现</a><span>/</span><span class="current">排行榜</span>
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <h1>资源站排行榜</h1>
+    <p class="hero-sub">从 {{ total }} 个在线站点中按不同维度排序，可用率与响应速度均来自最近的探测记录。</p>
+  </div>
+</section>
+
+<div class="sort-tabs sort-tabs-standalone">
+  <a href="/top?sort=uptime" class="{{ 'is-active' if sort == 'uptime' else '' }}">可用率</a>
+  <a href="/top?sort=resources" class="{{ 'is-active' if sort == 'resources' else '' }}">资源量</a>
+  <a href="/top?sort=speed" class="{{ 'is-active' if sort == 'speed' else '' }}">响应速度</a>
+  <a href="/top?sort=latest" class="{{ 'is-active' if sort == 'latest' else '' }}">最近更新</a>
+</div>
+
+<ol class="rank-list">
+  {% for item in items %}
+  <li class="rank-item">
+    <span class="rank-num {{ 'is-top' if loop.index <= 3 else '' }}">{{ loop.index }}</span>
+    <div class="rank-main">
+      <div class="rank-head">
+        <a href="/source/{{ item.slug }}" class="rank-name">{{ item.name }}</a>
+        <span class="badge badge-{{ item.status_class }}"><i class="dot"></i>{{ item.status_label }}</span>
+      </div>
+      <p class="rank-desc">{{ item.description or item.domain }}</p>
+      <div class="tag-row">
+        {% for tag in item.tags[:3] %}<a class="tag" href="/category/{{ tag|urlencode }}">#{{ tag }}</a>{% endfor %}
+      </div>
+    </div>
+    <div class="rank-metrics">
+      <div><strong class="grad">{{ item.uptime_text }}</strong><span>可用率</span></div>
+      <div><strong>{{ item.resources_text }}</strong><span>资源量</span></div>
+      <div><strong>{{ item.response_text }}</strong><span>响应</span></div>
+    </div>
+  </li>
+  {% endfor %}
+</ol>
+
+{% if not items %}
+<div class="empty-state">
+  <h3>暂无在线站点</h3>
+  <p>当前没有检测到可用资源站，请稍后再来查看。</p>
+</div>
+{% endif %}
+{% endblock %}

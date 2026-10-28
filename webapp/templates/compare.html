@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}资源站对比 - {{ site_name }}{% endblock %}
+{% block description %}并排对比影视资源站的可用率、资源量、响应速度与接口格式。{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="面包屑导航">
+  <a href="/">首页</a><span>/</span><a href="/discover">发现</a><span>/</span><span class="current">对比</span>
+</nav>
+
+<section class="hero hero-compact">
+  <div class="hero-bg"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <h1>资源站对比</h1>
+    <p class="hero-sub">最多选择 4 个资源站，并排查看可用率、资源量、响应速度与接口信息。</p>
+  </div>
+</section>
+
+<form class="filter-panel" method="get" action="/compare">
+  <div class="compare-picker">
+    {% for slot in slots %}
+    <label>
+      <span>站点 {{ loop.index }}</span>
+      <select name="pick{{ loop.index }}">
+        <option value="">未选择</option>
+        {% set current = items[loop.index0].slug if items|length > loop.index0 else '' %}
+        {% for option in options %}
+        <option value="{{ option.slug }}" {{ 'selected' if option.slug == current else '' }}>{{ option.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">开始对比</button>
+  </div>
+</form>
+
+{% if items %}
+<div class="table-wrap">
+  <table class="data-table compare-table">
+    <thead>
+      <tr>
+        <th>对比项</th>
+        {% for item in items %}
+        <th><a class="table-link" href="/source/{{ item.slug }}">{{ item.name }}</a></th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>当前状态</th>
+        {% for item in items %}
+        <td><span class="badge badge-{{ item.status_class }}"><i class="dot"></i>{{ item.status_label }}</span></td>
+        {% endfor %}
+      </tr>
+      <tr>
+        <th>可用率</th>
+        {% for item in items %}<td><strong>{{ item.uptime_text }}</strong></td>{% endfor %}
+      </tr>
+      <tr>
+        <th>30 天实测可用率</th>
+        {% for item in items %}
+        <td>{{ item.uptime_30d | percent if item.uptime_30d is not none else '样本不足' }}</td>
+        {% endfor %}
+      </tr>
+      <tr>
+        <th>资源量</th>
+        {% for item in items %}<td>{{ item.resources_text }}</td>{% endfor %}
+      </tr>
+      <tr>
+        <th>平均响应</th>
+        {% for item in items %}<td>{{ item.response_text }}</td>{% endfor %}
+      </tr>
+      <tr>
+        <th>接口格式</th>
+        {% for item in items %}<td>{{ item.api_type_label }}</td>{% endfor %}
+      </tr>
+      <tr>
+        <th>更新频率</th>
+        {% for item in items %}<td>{{ item.update_frequency or '未标注' }}</td>{% endfor %}
+      </tr>
+      <tr>
+        <th>接口地址</th>
+        {% for item in items %}
+        <td><span class="mono">{{ item.api or '未收录' }}</span></td>
+        {% endfor %}
+      </tr>
+      <tr>
+        <th>标签</th>
+        {% for item in items %}
+        <td>
+          <div class="tag-row">
+            {% for tag in item.tags[:3] %}<a class="tag" href="/category/{{ tag|urlencode }}">#{{ tag }}</a>{% endfor %}
+          </div>
+        </td>
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <h3>还没有选择站点</h3>
+  <p>在上方选择 2-4 个资源站后点击「开始对比」。</p>
+</div>
+{% endif %}
+{% endblock %}
