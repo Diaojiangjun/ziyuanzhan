@@ -1,3 +1,4 @@
+# 构建并推送镜像到 GitHub 容器仓库（GHCR），供服务器直接拉取
 name: Build and Push Image
 
 on:
