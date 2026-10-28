@@ -79,21 +79,21 @@ uvicorn webapp.main:app --host 0.0.0.0 --port 8000
 echo "<你的 GitHub PAT>" | docker login ghcr.io -u <你的用户名> --password-stdin
 ```
 
-3. 服务器上拉取并运行（把 `OWNER/REPO` 换成实际仓库名，小写）：
+3. 服务器上拉取并运行：
 
 ```bash
-docker pull ghcr.io/owner/repo:latest
+docker pull ghcr.io/diaojiangjun/ziyuanzhan:latest
 docker run -d --name ziyuanzhan --restart unless-stopped \
   -p 8000:8000 \
   -v $(pwd)/data:/app/webapp/data \
   -e SITE_NAME=资源组 \
-  ghcr.io/owner/repo:latest
+  ghcr.io/diaojiangjun/ziyuanzhan:latest
 ```
 
 也可以用 Compose 拉取镜像而不在本地构建：
 
 ```bash
-IMAGE=ghcr.io/owner/repo:latest docker compose up -d --no-build
+IMAGE=ghcr.io/diaojiangjun/ziyuanzhan:latest docker compose up -d --no-build
 ```
 
 镜像标签包含 `latest` 与提交短哈希（如 `sha-1a2b3c4`），需要回滚时指定哈希即可。GitHub Pages 只托管 `docs/` 静态监控页，`webapp/` 必须跑在容器或服务器上。
